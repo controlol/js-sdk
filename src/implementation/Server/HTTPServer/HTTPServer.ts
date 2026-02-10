@@ -26,7 +26,7 @@ export type IServerType = express.Express;
 
 export default class HTTPServer implements IServer {
   server: IServerType;
-  serverInstance: undefined | http.Server; // defined after start()
+  serverInstance: http.Server;
   serverTerminator: undefined | ReturnType<typeof createHttpTerminator>; // defined after start()
   serverHost: string;
   serverPort: string;
@@ -47,6 +47,7 @@ export default class HTTPServer implements IServer {
     this.isInitialized = false;
 
     this.server = options.serverHttp ?? express();
+    this.serverInstance = http.createServer(this.server)
     this.server.use(
       bodyParser.text({
         limit: `${this.serverOptions?.maxBodySizeMb ?? 4}mb`,
@@ -114,7 +115,7 @@ export default class HTTPServer implements IServer {
     this.serverPort = port;
 
     // Initialize Server Listener
-    this.serverInstance = await this.server.listen(parseInt(port, 10));
+    this.serverInstance.listen(parseInt(port, 10));
     this.logger.info(`Listening on ${port}`);
     this.serverAddress = `http://${host}:${port}`;
 
